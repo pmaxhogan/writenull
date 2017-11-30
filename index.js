@@ -2,8 +2,6 @@
   const fs = require("fs");
   const crypto = require("crypto");
 
-  const chunkLength = 1000;
-
   const file = process.argv[2];
   fs.writeFileSync(file, "");
 
@@ -11,6 +9,25 @@
   let size = parseInt(sizeArg);
 
   const options = process.argv.slice(4);
+
+  let chunkLength = 1000;
+  options.some(option => {
+    let slice;
+    if(option.startsWith("--chunk=")){
+      slice = "--chunk=".length;
+    }else if(option.startsWith("-c=")){
+      slice = "-c=".length;
+    }
+    if(slice){
+      const newSize = parseInt(option.slice(slice));
+      if(newSize && newSize > 0 && Math.floor(newSize) === newSize){
+        chunkLength = newSize;
+        return true;
+      }else{
+        console.error("Invalid chunk size ", option.slice(size));
+      }
+    }
+  });
 
   const numList = "KMGTPE";
   if(sizeArg.slice(-1) === "B" && numList.includes(sizeArg.slice(-2, -1)) && parseInt(sizeArg.slice(0, -2))){
@@ -22,6 +39,7 @@
       size *= 1024;
     }
   }
+  console.log("writing", size, "bytes...");
   if(!size || size <= 0 || Math.floor(size) !== size){
     return console.error(`Size ${process.argv[3]} was not a valid number greater than 0!`);
   }
