@@ -1,6 +1,7 @@
 (() => {
   const fs = require("fs");
   const crypto = require("crypto");
+  const {spawnSync} = require("child_process");
 
   const getBytesFromNotation = str => {
     const numList = "KMGTPE";
@@ -20,56 +21,79 @@
 
   const file = process.argv[2];
   fs.writeFileSync(file, "");
+  process.nextTick(() => {
+    const sizeArg = process.argv[3];
+    let size = getBytesFromNotation(sizeArg);
 
-  const sizeArg = process.argv[3];
-  let size = getBytesFromNotation(sizeArg);
+    const options = process.argv.slice(4);
 
-  const options = process.argv.slice(4);
+    let flags = [];
 
-  let chunkLength = 1000;
-  options.some(option => {
-    let slice;
-    if(option.startsWith("--chunk=")){
-      slice = "--chunk=".length;
-    }else if(option.startsWith("-c=")){
-      slice = "-c=".length;
+    if(options.includes("-h") || options.includes("--hide")){
+      flags.push("+S");
     }
-    if(slice){
-      console.log("getting chunk size from", option.slice(slice));
-      const newSize = getBytesFromNotation(option.slice(slice));
-      if(newSize && newSize > 0 && Math.floor(newSize) === newSize){
-        chunkLength = newSize;
-        return true;
-      }else{
-        console.error("Invalid chunk size ", option.slice(size));
+
+    if(options.includes("-s") || options.includes("--system")){
+      flags.push("+H");
+    }
+
+    if(options.includes("-n") || options.includes("--no-content")){
+      flags.push("+I");
+    }
+
+    if(flags.length){
+      const proc = spawnSync("attrib", flags.concat([file]));
+      console.log(proc.stdout + proc.stderr);
+    }
+
+    process.nextTick(() => {
+
+      let chunkLength = 1000;
+      options.some(option => {
+        let slice;
+        if(option.startsWith("--chunk=")){
+          slice = "--chunk=".length;
+        }else if(option.startsWith("-c=")){
+          slice = "-c=".length;
+        }
+        if(slice){
+          console.log("getting chunk size from", option.slice(slice));
+          const newSize = getBytesFromNotation(option.slice(slice));
+          if(newSize && newSize > 0 && Math.floor(newSize) === newSize){
+            chunkLength = newSize;
+            return true;
+          }else{
+            console.error("Invalid chunk size ", option.slice(size));
+          }
+        }
+      });
+      console.log("writing", size, "bytes...");
+      if(!size || size <= 0 || Math.floor(size) !== size){
+        return console.error(`Size ${process.argv[3]} was not a valid number greater than 0!`);
       }
-    }
+
+      const getBytes = num => {
+        if(options.includes("--random") || options.includes("-r")){
+          return crypto.randomBytes(num);
+        }else if(options.includes("--newline") || options.includes("-n")){
+          return "\n".repeat(num);
+        }else{
+          return "\0".repeat(num);
+        }
+      };
+
+      if(size < chunkLength){
+        console.log("wrote", size, "bytes to", file);
+        fs.appendFileSync(file, getBytes(size));
+      }else{
+        let left = size;
+        do{
+          const bytesToWrite = Math.min(left, chunkLength);
+          console.log("wrote", bytesToWrite, "bytes to", file);
+          fs.appendFileSync(file, getBytes(bytesToWrite));
+          left -= bytesToWrite;
+        }while(left > 0);
+      }
+    });
   });
-  console.log("writing", size, "bytes...");
-  if(!size || size <= 0 || Math.floor(size) !== size){
-    return console.error(`Size ${process.argv[3]} was not a valid number greater than 0!`);
-  }
-
-  const getBytes = num => {
-    if(options.includes("--random") || options.includes("-r")){
-      return crypto.randomBytes(num);
-    }else if(options.includes("--newline") || options.includes("-n")){
-      return "\n".repeat(num);
-    }else{
-      return "\0".repeat(num);
-    }
-  };
-
-  if(size < chunkLength){
-    console.log("wrote", size, "bytes to", file);
-    fs.appendFileSync(file, getBytes(size));
-  }else{
-    let left = size;
-    do{
-      const bytesToWrite = Math.min(left, chunkLength);
-      console.log("wrote", bytesToWrite, "bytes to", file);
-      fs.appendFileSync(file, getBytes(bytesToWrite));
-      left -= bytesToWrite;
-    }while(left > 0);
-  }
 })();
