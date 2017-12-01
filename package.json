@@ -1,6 +1,6 @@
 {
   "name": "writenull",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Write null (or random) bytes to a file",
   "main": "index.js",
   "scripts": {
