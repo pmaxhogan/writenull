@@ -1,3 +1,5 @@
+#!/bin/node
+
 (() => {
   const fs = require("fs");
   const crypto = require("crypto");

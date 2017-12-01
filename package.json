@@ -1,0 +1,22 @@
+{
+  "name": "writenull",
+  "version": "1.0.0",
+  "description": "Write null (or random) bytes to a file",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/programmer5000-com/writenull.git"
+  },
+  "author": "programmer5000",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/programmer5000-com/writenull/issues"
+  },
+  "homepage": "https://github.com/programmer5000-com/writenull#readme",
+  "bin": {
+    "writenull": "node index.js"
+  }
+}
