@@ -64,7 +64,7 @@
     };
 
     if(size < chunkLength){
-      console.log("writing", bytesToWrite, "bytes to", file);
+      console.log("writing", getBytes(size), "bytes to", file);
       fs.appendFileSync(file, getBytes(size));
       console.log("wrote", size, "bytes to", file);
     }else{
