@@ -17,6 +17,6 @@
   },
   "homepage": "https://github.com/programmer5000-com/writenull#readme",
   "bin": {
-    "writenull": "node index.js"
+    "writenull": "index.js"
   }
 }
