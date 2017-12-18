@@ -4,6 +4,12 @@
   const fs = require("fs");
   const crypto = require("crypto");
   const {spawnSync} = require("child_process");
+  
+  if(process.argv[2] === "-h" || process.argv[2] === "--help"){
+	return console.log(`
+Writenull
+writenull filename size [-r|--random] [(-c|--chunk)=#] [-h|--hidden] [-s|--system] [-r|--read-only] [-n|--no-content]`);
+  }
 
   const getBytesFromNotation = str => {
     const numList = "KMGTPE";
