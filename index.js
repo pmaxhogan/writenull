@@ -4,26 +4,24 @@
   const fs = require("fs");
   const crypto = require("crypto");
   const {spawnSync} = require("child_process");
-  
-  if(process.argv[2] === "-h" || process.argv[2] === "--help"){
+
+  if(process.argv.includes("-h") || process.argv.includes("--help") || process.argv.length < 3){
 	return console.log(`
-Writenull
-writenull filename size [-r|--random] [(-c|--chunk)=#] [-h|--hidden] [-s|--system] [-r|--read-only] [-n|--no-content]`);
+Usage:
+writenull filename size [-r|--random] [(-c|--chunk)=#] [-h|--hidden] [-s|--system] [-r|--read-only] [-n|--no-content]
+`);
   }
 
   const getBytesFromNotation = str => {
+    str = str.toUpperCase();
     const numList = "KMGTPE";
-    if(str.slice(-1) === "B" && numList.includes(str.slice(-2, -1)) && parseInt(str.slice(0, -2))){
-      let size = parseInt(str.slice(0, -2));
-      const increment = str.slice(-2, -1);
-      console.log("calculaing", str.slice(0, -2), increment + "B");
-      for(let i = 0; i < numList.indexOf(increment) + 1; i++){
-        console.log("size", size, "became", size * 1024);
-        size *= 1024;
-      }
-      return size;
-    }else{
+    const matchesNumList = numList.includes(str.slice(-2, -1));
+    if(!isNaN(str)) {
       return parseInt(str);
+    }else if(str.endsWith("B") && !isNaN(str.slice(0, -1))){
+      return parseInt(str.slice(0, -1));
+    }else if(!isNaN(str.slice(0, -2))){
+      return parseInt(str.slice(0, -2)) * (1024 ** (numList.indexOf(str.slice(-2, -1)) + 1));
     }
   };
 
